@@ -393,7 +393,8 @@ Rules:
             ],
 
             temperature=0.5,
-            max_tokens=400
+            top_p=0.9,
+            max_tokens=900
         )
 
         answer = response.choices[0].message.content
