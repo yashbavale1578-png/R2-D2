@@ -377,20 +377,43 @@ async def ai(ctx, *, prompt):
         # DELETE THINKING MESSAGE
         await thinking.delete()
 
-        # SPLIT LONG RESPONSES
-        chunks = [
-            answer[i:i+1900]
-            for i in range(0, len(answer), 1900)
-        ]
+        # CLEAN RESPONSE
+        answer = answer.strip()
 
+        # SMART CHUNKING
+        chunks = []
+
+        current_chunk = ""
+
+        lines = answer.split("\n")
+
+        for line in lines:
+
+            # IF CHUNK TOO BIG
+            if len(current_chunk) + len(line) + 1 > 1800:
+
+                chunks.append(current_chunk)
+
+                current_chunk = ""
+
+            current_chunk += line + "\n"
+
+        # ADD LAST CHUNK
+        if current_chunk:
+            chunks.append(current_chunk)
+
+        # SEND CHUNKS
         for chunk in chunks:
+
+            chunk = chunk.strip()
 
             # DETECT CODE
             if (
                 "def " in chunk
-                or "import " in chunk
                 or "class " in chunk
+                or "import " in chunk
                 or "print(" in chunk
+                or "return " in chunk
             ):
 
                 formatted = f"```python\n{chunk}\n```"
