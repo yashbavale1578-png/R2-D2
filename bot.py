@@ -34,10 +34,12 @@ keep_alive()
 # =========================
 TOKEN = os.getenv("TOKEN")
 client = OpenAI(
-    base_url="https://integrate.api.nvidia.com/v1",
-    api_key=os.getenv("NVIDIA_API_KEY")
-)
 
+    base_url="https://openrouter.ai/api/v1",
+
+    api_key=os.getenv("OPENROUTER_API_KEY")
+
+)
 # =========================
 # BOT INTENTS
 # =========================
@@ -107,7 +109,7 @@ blocked_words = [
     "randi",
     "gandu",
     "gand",
-    "mkc"
+    "mkc",
     "kutta",
     
 
@@ -363,7 +365,7 @@ async def ai(ctx, *, prompt):
 
         response = client.chat.completions.create(
 
-            model="google/gemma-2-9b-it",
+            model="nvidia/nemotron-3-super-120b-a12b:free",
 
                 messages=[
 
