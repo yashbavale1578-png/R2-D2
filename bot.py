@@ -363,9 +363,9 @@ async def ai(ctx, *, prompt):
 
         response = client.chat.completions.create(
 
-            model="google/gemma-3-31b-it",
+            model="google/gemma-3n-e4b-it",
 
-            messages=[
+                messages=[
 
                 {
                     "role": "system",
@@ -393,7 +393,7 @@ Rules:
             ],
 
             temperature=0.5,
-            max_tokens=350
+            max_tokens=400
         )
 
         answer = response.choices[0].message.content
