@@ -1,7 +1,10 @@
 import discord
 from discord.ext import commands
+from discord.ext.commands import cooldown, BucketType
+
 import re
 import os
+
 from dotenv import load_dotenv
 from openai import OpenAI
 from flask import Flask
@@ -351,6 +354,7 @@ async def clear(ctx, amount=5):
 # AI COMMAND
 # =========================
 @bot.command()
+@cooldown(1, 10, BucketType.user)
 async def ai(ctx, *, prompt):
 
     thinking = await ctx.send("🤖 Thinking...")
@@ -358,19 +362,43 @@ async def ai(ctx, *, prompt):
     try:
 
         response = client.chat.completions.create(
-            model="minimaxai/minimax-m2.7",
+
+            model="google/gemma-3-31b-it",
+
             messages=[
+
+                {
+                    "role": "system",
+                    "content": """
+You are an elite software engineering assistant inside Discord.
+
+Rules:
+- Keep responses concise.
+- Prefer code over explanations.
+- If explanation is needed, keep it concise and simple.
+- Provide a short explanation only if asked for.
+- If the user asks for code, provide the code directly.
+- Generate clean runnable code.
+- Use proper markdown formatting.
+- Avoid giant paragraphs.
+- Reply to all questions in less than 150 words(this applies only for explanations and descriptions, not for code blocks).    
+- Optimize responses for Discord readability.
+"""
+                },
+
                 {
                     "role": "user",
                     "content": prompt
                 }
             ],
-            temperature=0.7,
-            max_tokens=1200
+
+            temperature=0.5,
+            max_tokens=350
         )
 
         answer = response.choices[0].message.content
 
+        # EMPTY RESPONSE FIX
         if not answer:
             answer = "⚠️ Model returned empty response."
 
@@ -414,6 +442,8 @@ async def ai(ctx, *, prompt):
                 or "import " in chunk
                 or "print(" in chunk
                 or "return " in chunk
+                or "for " in chunk
+                or "while " in chunk
             ):
 
                 formatted = f"```python\n{chunk}\n```"
@@ -428,6 +458,7 @@ async def ai(ctx, *, prompt):
             )
 
             await ctx.send(embed=embed)
+
     except Exception as e:
 
         await thinking.edit(
