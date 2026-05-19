@@ -366,22 +366,34 @@ async def ai(ctx, *, prompt):
                 }
             ],
             temperature=0.7,
-            max_tokens=300
+            max_tokens=1200
         )
 
         answer = response.choices[0].message.content
 
-        if len(answer) > 1900:
-            answer = answer[:1900]
+        # DELETE THINKING MESSAGE
+        await thinking.delete()
 
-        await thinking.edit(content=answer)
+        # SPLIT LONG RESPONSES
+        chunks = [
+            answer[i:i+1900]
+            for i in range(0, len(answer), 1900)
+        ]
+
+        for chunk in chunks:
+
+            embed = discord.Embed(
+                description=f"```python\n{chunk}\n```",
+                color=0x5865F2
+            )
+
+            await ctx.send(embed=embed)
 
     except Exception as e:
 
         await thinking.edit(
             content=f"❌ Error: {e}"
         )
-
 # =========================
 # START BOT
 # =========================
