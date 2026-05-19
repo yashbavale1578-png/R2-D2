@@ -1,4 +1,5 @@
 import discord
+from tavily import TavilyClient
 from discord.ext import commands
 from discord.ext.commands import cooldown, BucketType
 
@@ -39,6 +40,9 @@ client = OpenAI(
 
     api_key=os.getenv("OPENROUTER_API_KEY")
 
+)
+tavily = TavilyClient(
+    api_key=os.getenv("TAVILY_API_KEY")
 )
 # =========================
 # BOT INTENTS
@@ -205,7 +209,7 @@ async def on_message(message):
     # BAD WORD FILTER
     for word in blocked_words:
 
-        if word in content:
+        if re.search(rf"\b{re.escape(word)}\b", content):
 
             await message.delete()
 
@@ -363,37 +367,59 @@ async def ai(ctx, *, prompt):
 
     try:
 
-        response = client.chat.completions.create(
+        # SEARCH INTERNET
+        search = tavily.search(
+            query=prompt,
+            max_results=3
+        )
 
-            model="nvidia/nemotron-3-super-120b-a12b:free",
+        search_context = ""
 
-                messages=[
+        for result in search.get("results", []):
+            search_context += f"""
+Title:
+{result['title']}
 
-                {
-                    "role": "system",
-                    "content": """
+Content:
+{result['content']}
+
+URL:
+{result['url']}
+
+"""
+
+        # BUILD MESSAGES
+        messages = [
+            {
+                "role": "system",
+                "content": """
 You are an elite software engineering assistant inside Discord.
 
 Rules:
 - Keep responses concise.
 - Prefer code over explanations.
-- If explanation is needed, keep it concise and simple.
-- Provide a short explanation only if asked for.
-- If the user asks for code, provide the code directly.
+- Use modern libraries/frameworks.
+- Avoid deprecated tools.
+- Use live search results if relevant.
 - Generate clean runnable code.
-- Use proper markdown formatting.
-- Avoid giant paragraphs.
-- Reply to all questions in less than 150 words(this applies only for explanations and descriptions, not for code blocks).    
 - Optimize responses for Discord readability.
 """
-                },
+            },
+            {
+                "role": "user",
+                "content": f"""
+User Question:
+{prompt}
 
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
+Live Web Search Results:
+{search_context}
+"""
+            }
+        ]
 
+        response = client.chat.completions.create(
+            model="nvidia/nemotron-3-super-120b-a12b:free",
+            messages=messages,
             temperature=0.5,
             top_p=0.9,
             max_tokens=900
@@ -466,6 +492,14 @@ Rules:
 
         await thinking.edit(
             content=f"❌ Error: {e}"
+        )
+@ai.error
+async def ai_error(ctx, error):
+
+    if isinstance(error, commands.CommandOnCooldown):
+
+        await ctx.send(
+            f"⏳ Slow down. Try again in {round(error.retry_after, 1)}s."
         )
 # =========================
 # START BOT
