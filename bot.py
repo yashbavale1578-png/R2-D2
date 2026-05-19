@@ -385,13 +385,26 @@ async def ai(ctx, *, prompt):
 
         for chunk in chunks:
 
+            # DETECT CODE
+            if (
+                "def " in chunk
+                or "import " in chunk
+                or "class " in chunk
+                or "print(" in chunk
+            ):
+
+                formatted = f"```python\n{chunk}\n```"
+
+            else:
+
+                formatted = chunk
+
             embed = discord.Embed(
-                description=f"```python\n{chunk}\n```",
+                description=formatted,
                 color=0x5865F2
             )
 
             await ctx.send(embed=embed)
-
     except Exception as e:
 
         await thinking.edit(
