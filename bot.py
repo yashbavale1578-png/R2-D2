@@ -371,6 +371,9 @@ async def ai(ctx, *, prompt):
 
         answer = response.choices[0].message.content
 
+        if not answer:
+            answer = "⚠️ Model returned empty response."
+
         # DELETE THINKING MESSAGE
         await thinking.delete()
 
