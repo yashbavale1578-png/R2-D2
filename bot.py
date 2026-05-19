@@ -3,6 +3,7 @@ from discord.ext import commands
 import re
 import os
 from dotenv import load_dotenv
+from openai import OpenAI
 
 # =========================
 # LOAD ENV FILE
@@ -13,6 +14,10 @@ load_dotenv()
 # BOT TOKEN
 # =========================
 TOKEN = os.getenv("TOKEN")
+client = OpenAI(
+    base_url="https://integrate.api.nvidia.com/v1",
+    api_key=os.getenv("NVIDIA_API_KEY")
+)
 
 # =========================
 # BOT INTENTS
@@ -326,6 +331,40 @@ async def avatar(ctx):
 async def clear(ctx, amount=5):
 
     await ctx.channel.purge(limit=amount)
+# =========================
+# AI COMMAND
+# =========================
+@bot.command()
+async def ai(ctx, *, prompt):
+
+    thinking = await ctx.send("🤖 Thinking...")
+
+    try:
+
+        response = client.chat.completions.create(
+            model="minimaxai/minimax-m2.7",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0.7,
+            max_tokens=300
+        )
+
+        answer = response.choices[0].message.content
+
+        if len(answer) > 1900:
+            answer = answer[:1900]
+
+        await thinking.edit(content=answer)
+
+    except Exception as e:
+
+        await thinking.edit(
+            content=f"❌ Error: {e}"
+        )
 
 # =========================
 # START BOT
