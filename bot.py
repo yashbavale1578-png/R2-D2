@@ -481,12 +481,7 @@ Live Web Search Results:
 
                 formatted = chunk
 
-            embed = discord.Embed(
-                description=formatted,
-                color=0x5865F2
-            )
-
-            await ctx.send(embed=embed)
+            await ctx.send(formatted)
 
     except Exception as e:
 
