@@ -363,7 +363,7 @@ async def ai(ctx, *, prompt):
 
         response = client.chat.completions.create(
 
-            model="google/gemma-3n-e4b-it",
+            model="google/gemma-2-9b-it",
 
                 messages=[
 
