@@ -4,11 +4,27 @@ import re
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
+from flask import Flask
+from threading import Thread
 
 # =========================
 # LOAD ENV FILE
 # =========================
 load_dotenv()
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "R2-D2 is alive!"
+
+def run():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
+
+keep_alive()
 
 # =========================
 # BOT TOKEN
