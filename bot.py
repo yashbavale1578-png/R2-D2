@@ -466,7 +466,7 @@ Live Web Search Results:
         ]
 
         response = client.chat.completions.create(
-            model="google/gemma-4-31b-it:free",
+            model="nvidia/nemotron-3-super-120b-a12b:free",
             messages=messages,
             temperature=0.6,
             top_p=0.95,
