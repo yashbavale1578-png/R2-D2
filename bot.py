@@ -466,7 +466,7 @@ Live Web Search Results:
         ]
 
         response = client.chat.completions.create(
-            model="minimax/minimax-m2.5:free",
+            model="cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
             messages=messages,
             temperature=0.6,
             top_p=0.95,
